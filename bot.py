@@ -2,88 +2,95 @@ import requests
 import time
 from telegram import Bot
 
-# Configurações do Telegram
+# Configurações
 TELEGRAM_TOKEN = "8111108757:AAEGDutj4RjR5yKLff2Y_dbbqWfW15QH8Ss"
 TELEGRAM_CHAT_ID = "1024065103"
-
-# Endereço de interesse na Solana
 SOLANA_ADDRESS = "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"
 
-# Inicializa o bot do Telegram
 bot = Bot(token=TELEGRAM_TOKEN)
-
-# Lista para armazenar assinaturas já processadas
-processed_signatures = set()
+processed_signatures = set()  # Armazena transações já analisadas
 
 def send_telegram_message(message):
-    """Envia mensagem no Telegram."""
-    try:
-        bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
-        print("🔔 Alerta enviado no Telegram!")
-    except Exception as e:
-        print(f"❌ Erro ao enviar mensagem: {e}")
-
-def get_latest_transactions():
-    """Obtém as últimas transações do endereço monitorado."""
-    response = requests.post("https://api.mainnet-beta.solana.com", json={
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "getSignaturesForAddress",
-        "params": [SOLANA_ADDRESS, {"limit": 50}]  # Ajustável
-    })
-
-    if response.status_code == 200:
-        return response.json().get("result", [])
-    return []
-
-def get_transaction_details(signature):
-    """Obtém detalhes de uma transação específica."""
-    response = requests.post("https://api.mainnet-beta.solana.com", json={
-        "jsonrpc": "2.0",
-        "id": 1,
-        "method": "getTransaction",
-        "params": [signature, "jsonParsed"]
-    })
-
-    if response.status_code == 200:
-        return response.json().get("result", {})
-    return {}
+    """ Envia mensagem para o Telegram """
+    print(f"Enviando mensagem: {message}")
+    bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
 
 def monitor_transactions():
-    print("🚀 Monitoramento iniciado...")
-    
+    """ Monitora transações do endereço no Solana """
+    print("[✔] Iniciando monitoramento de transações...")
+
     while True:
-        transactions = get_latest_transactions()
+        print("[✔] Verificando novas transações...")
 
-        for tx in transactions:
-            signature = tx["signature"]
+        # Busca as últimas 50 transações do endereço monitorado
+        response = requests.post("https://api.mainnet-beta.solana.com", json={
+            "jsonrpc": "2.0",
+            "id": 1,
+            "method": "getSignaturesForAddress",
+            "params": [SOLANA_ADDRESS, {"limit": 50}]
+        })
 
-            # Ignorar se já analisamos essa transação
-            if signature in processed_signatures:
-                continue
-            
-            # Adiciona ao histórico de transações processadas
-            processed_signatures.add(signature)
+        if response.status_code == 200:
+            transactions = response.json().get("result", [])
 
-            # Obtém detalhes da transação
-            tx_details = get_transaction_details(signature)
-            
-            # Verifica se tx_details não é None
-            if tx_details is None:
-                print(f"⚠️ Detalhes da transação {signature} não encontrados.")
-                continue
+            for tx in transactions:
+                signature = tx['signature']
+                if signature in processed_signatures:
+                    continue  # Ignora transações já analisadas
 
-            log_messages = tx_details.get("meta", {}).get("logMessages", [])
+                processed_signatures.add(signature)  # Marca como processada
+                print(f"[✔] Nova transação detectada: {signature}")
 
-            # Verifica se a instrução desejada está nos logs
-            for log in log_messages:
-                if "InitializePermissionlessConstantProductPoolWithConfig" in log:
-                    message = f"🚨 Nova pool detectada!\n🔗 Tx: https://solana.fm/tx/{signature}\n📜 Instrução: {log}"
-                    send_telegram_message(message)
-                    break  # Para evitar múltiplos alertas da mesma transação
+                # Obtém detalhes completos da transação
+                tx_details = requests.post("https://api.mainnet-beta.solana.com", json={
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "getTransaction",
+                    "params": [signature, "json"]
+                }).json()
 
-        # Aguarda um tempo antes de verificar novamente
-        time.sleep(10)  # Ajustável para um monitoramento mais rápido/lento
+                if not tx_details.get("result"):
+                    continue
+
+                # Obtém contas envolvidas
+                accounts = tx_details["result"]["transaction"]["message"].get("accountKeys", [])
+
+                # Verifica se o endereço monitorado está na transação
+                if SOLANA_ADDRESS not in accounts:
+                    continue  # Ignora transações que não envolvem o endereço monitorado
+
+                # Obtém mudanças de saldo de tokens (se houver)
+                post_balances = tx_details["result"]["meta"].get("postTokenBalances", [])
+
+                # Verifica se o endereço está em mudanças de saldo
+                address_involved = any(
+                    SOLANA_ADDRESS in (acc.get("owner", ""), acc.get("account", ""))
+                    for acc in post_balances
+                )
+
+                # Se o endereço não estiver envolvido, ignora a transação
+                if not address_involved:
+                    continue
+
+                print(f"[✔] Transação relevante detectada para {SOLANA_ADDRESS}")
+
+                # Verifica logs para encontrar a instrução específica
+                instructions = tx_details["result"]["meta"].get("logMessages", [])
+                for instruction in instructions:
+                    if "InitializePermissionlessConstantProductPoolWithConfig" in instruction:
+                        message = (
+                            f"🚀 Nova pool detectada na Meteora!\n\n"
+                            f"🔗 Transação: https://solscan.io/tx/{signature}\n"
+                            f"🔍 Instrução: {instruction}"
+                        )
+                        send_telegram_message(message)
+                        print("[✔] Alerta enviado no Telegram!")
+                        break  # Sai do loop assim que encontrar a instrução
+        else:
+            print(f"[✖] Erro ao obter transações: {response.status_code}")
+
+        print("[⏳] Aguardando 15 segundos antes de verificar novamente...")
+        time.sleep(15)
 
 if __name__ == "__main__":
     monitor_transactions()
