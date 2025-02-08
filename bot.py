@@ -67,6 +67,12 @@ def monitor_transactions():
 
             # Obtém detalhes da transação
             tx_details = get_transaction_details(signature)
+            
+            # Verifica se tx_details não é None
+            if tx_details is None:
+                print(f"⚠️ Detalhes da transação {signature} não encontrados.")
+                continue
+
             log_messages = tx_details.get("meta", {}).get("logMessages", [])
 
             # Verifica se a instrução desejada está nos logs
