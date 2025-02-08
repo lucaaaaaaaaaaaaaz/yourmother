@@ -40,27 +40,31 @@ const monitorTransactions = async () => {
           ApiKey: apikey,
         },
       });
-console.log(response.data)
+
       const transactions = response.data.result;
 
-      // Processa cada transação
-      for (const transaction of transactions) {
-        const transactionHash = transaction.transactionHash;
+      if (!Array.isArray(transactions) || transactions.length === 0) {
+        console.log("Nenhuma transação encontrada.");
+      } else {
+        // Processa cada transação
+        for (const transaction of transactions) {
+          const transactionHash = transaction.transactionHash;
 
-        // Verifica se a transação já foi processada
-        if (!processedTransactions.has(transactionHash)) {
-          processedTransactions.add(transactionHash); // Marca como processada
+          // Verifica se a transação já foi processada
+          if (!processedTransactions.has(transactionHash)) {
+            processedTransactions.add(transactionHash); // Marca como processada
 
-          // Verifica os logs da transação
-          const logs = transaction.logs || [];
-          const hasTargetLog = logs.some((log) =>
-            log.includes("Program logged: Instruction: InitializePermissionlessConstantProductPoolWithConfig")
-          );
+            // Verifica os logs da transação
+            const logs = transaction.logs || [];
+            const hasTargetLog = logs.some((log) =>
+              log.includes("Program logged: Instruction: InitializePermissionlessConstantProductPoolWithConfig")
+            );
 
-          // Se a transação contiver a frase desejada, envia uma notificação no Telegram
-          if (hasTargetLog) {
-            const message = `Nova transação detectada!\nHash: ${transactionHash}\nLink: https://explorer.solana.com/tx/${transactionHash}`;
-            await sendTelegramNotification(message);
+            // Se a transação contiver a frase desejada, envia uma notificação no Telegram
+            if (hasTargetLog) {
+              const message = `Nova transação detectada!\nHash: ${transactionHash}\nLink: https://explorer.solana.com/tx/${transactionHash}`;
+              await sendTelegramNotification(message);
+            }
           }
         }
       }
