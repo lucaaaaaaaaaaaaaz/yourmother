@@ -40,7 +40,7 @@ const monitorTransactions = async () => {
           ApiKey: apikey,
         },
       });
-
+console.log(response.data)
       const transactions = response.data.result;
 
       // Processa cada transação
