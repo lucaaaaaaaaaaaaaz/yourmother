@@ -3,7 +3,7 @@ import time
 from telegram import Bot
 
 # Configurações do Telegram
-TELEGRAM_TOKEN = "8111108757:AAEGDutj4RjR5yKLff2Y_dbbqWfW15QH8Ssm"
+TELEGRAM_TOKEN = "8111108757:AAEGDutj4RjR5yKLff2Y_dbbqWfW15QH8Ss"
 TELEGRAM_CHAT_ID = "1024065103"
 
 # Endereço de interesse na Solana
