@@ -31,7 +31,7 @@ const monitorTransactions = async () => {
 
     while (true) {
       // Busca as transações mais recentes
-      const response = await axios.get(`${solanafmBaseUrl}/v0/accounts/${walletAddress}/transfers`, {
+      const response = await axios.get(`${solanafmBaseUrl}/v0/accounts/${walletAddress}/transactions`, {
         params: {
           utcFrom: Math.floor(Date.now() / 1000) - 60, // Últimos 60 segundos
           utcTo: Math.floor(Date.now() / 1000),
@@ -41,7 +41,7 @@ const monitorTransactions = async () => {
         },
       });
 
-      const transactions = response.data.results;
+      const transactions = response.data.result;
 
       // Processa cada transação
       for (const transaction of transactions) {
