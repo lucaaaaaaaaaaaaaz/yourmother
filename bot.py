@@ -75,7 +75,7 @@ def monitor_transactions():
                 if SOLANA_ADDRESS not in accounts:
                     continue  # Ignora transações que não envolvem o endereço específico
                 
-                # Verifica logs para encontrar a instrução específica
+                # Agora, prossegue com a análise dos logs
                 instructions = tx_details["result"].get("meta", {}).get("logMessages", [])
                 print(f"Logs encontrados: {instructions}")  # Mostra todos os logs
 
