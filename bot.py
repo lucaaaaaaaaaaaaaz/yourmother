@@ -65,7 +65,7 @@ def monitor_transactions():
 
                 # Verifique se a instrução exata está no log
                 for instruction in instructions:
-                    if "Initialize Permissionless Constant Product Pool" in instruction:  # Busca por parte da instrução
+                    if "Initialize Permissionless Constant Product Pool With Config" in instruction:  # Busca por parte da instrução
                         message = (
                             f"🚀 Nova pool detectada na Meteora!\n\n"
                             f"🔗 Transação: https://solscan.io/tx/{signature}\n"
