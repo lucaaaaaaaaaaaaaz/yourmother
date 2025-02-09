@@ -8,7 +8,7 @@ from io import BytesIO
 # Variáveis de ambiente
 TELEGRAM_TOKEN = "8111108757:AAEGDutj4RjR5yKLff2Y_dbbqWfW15QH8Ss"
 TELEGRAM_CHAT_ID = "1024065103"
-SOLANA_ADDRESS = "Eo7WjKq67rjJQSxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"  # Endereço Solana específico
+SOLANA_ADDRESS = "Eo7WjKq67rjJQSZxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"  # Endereço Solana específico
 IMAGE_URL = "https://raw.githubusercontent.com/lucaaaaaaaaaaaaaz/yourmother/refs/heads/main/Image.png"  # URL da imagem hospedada
 
 bot = Bot(token=TELEGRAM_TOKEN)
