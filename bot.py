@@ -38,7 +38,7 @@ def monitor_transactions():
         print("[✔] Verificando novas transações...")
 
         # Busca as últimas transações do endereço específico
-        response = requests.post("https://api.mainnet-beta.solana.com", json={
+        response = requests.post("https://api.mainnet-beta.solana.com", json={  # API para pegar transações
             "jsonrpc": "2.0",
             "id": 1,
             "method": "getSignaturesForAddress",
@@ -57,7 +57,7 @@ def monitor_transactions():
                 print(f"[✔] Nova transação detectada: {signature}")
 
                 # Obtém detalhes da transação
-                tx_details = requests.post("https://api.mainnet-beta.solana.com", json={
+                tx_details = requests.post("https://api.mainnet-beta.solana.com", json={  # Detalhes da transação
                     "jsonrpc": "2.0",
                     "id": 1,
                     "method": "getTransaction",
@@ -79,23 +79,57 @@ def monitor_transactions():
                 instructions = tx_details["result"].get("meta", {}).get("logMessages", [])
                 print(f"Logs encontrados: {instructions}")  # Mostra todos os logs
 
-                # Verifique se a imagem específica está no log
+                # Verificar por palavras-chave nos logs
                 for instruction in instructions:
-                    if "image.png" in instruction:  # Busca pela string que representa a imagem
-                        # Aqui você pode adicionar a lógica para baixar e comparar a imagem
-                        # Suponha que você tenha uma URL para a imagem na transação
-                        transaction_image_url = "https://raw.githubusercontent.com/lucaaaaaaaaaaaaaz/yourmother/refs/heads/main/Image.png"  # Substitua pelo URL real
-                        transaction_image_hash = get_image_hash(transaction_image_url)
-                        
-                        if images_are_similar(reference_hash, transaction_image_hash):
-                            message = (
-                                f"🚀 Imagem semelhante detectada na transação!\n\n"
-                                f"🔗 Transação: https://solscan.io/tx/{signature}\n"
-                                f"🔍 Log: {instruction}"
-                            )
-                            send_telegram_message(message)
-                            print("[✔] Alerta enviado no Telegram!")
-                            break  # Sai do loop assim que encontrar a instrução
+                    # Verificar instrução específica 'Amm: Initialize Permissionless Constant Product Pool With Config'
+                    if "Amm: Initialize Permissionless Constant Product Pool With Config" in instruction:
+                        message = (
+                            f"🚀 Instrução 'Amm: Initialize Permissionless Constant Product Pool With Config' detectada!\n\n"
+                            f"🔗 Transação: https://solscan.io/tx/{signature}\n"
+                            f"🔍 Log: {instruction}"
+                        )
+                        send_telegram_message(message)
+                        print("[✔] Alerta enviado no Telegram!")
+                        break  # Sai do loop assim que encontrar a instrução
+
+                    # Verificar por 'Program logged: Instruction: InitializePermissionlessConstantProductPoolWithConfig'
+                    if 'Program logged: "Instruction: InitializePermissionlessConstantProductPoolWithConfig"' in instruction:
+                        message = (
+                            f"🚀 Instrução 'Program logged: Instruction: InitializePermissionlessConstantProductPoolWithConfig' detectada!\n\n"
+                            f"🔗 Transação: https://solscan.io/tx/{signature}\n"
+                            f"🔍 Log: {instruction}"
+                        )
+                        send_telegram_message(message)
+                        print("[✔] Alerta enviado no Telegram!")
+                        break  # Sai do loop assim que encontrar a instrução
+                    
+                    # Verificar por 'Amm: Lock' e os dados hexadecimais
+                    if "Amm: Lock" in instruction and "Instruction Data (Hex) 15 13 d0 2b ed 3e ff 57" in instruction:
+                        message = (
+                            f"🚀 Instrução 'Amm: Lock' com dados hexadecimais detectada!\n\n"
+                            f"🔗 Transação: https://solscan.io/tx/{signature}\n"
+                            f"🔍 Log: {instruction}"
+                        )
+                        send_telegram_message(message)
+                        print("[✔] Alerta enviado no Telegram!")
+                        break  # Sai do loop assim que encontrar a instrução
+
+                # Verifique se a imagem específica está no log
+                if any("image.png" in instruction for instruction in instructions):  # Busca pela string 'image.png' nos logs
+                    # Aqui você pode adicionar a lógica para baixar e comparar a imagem
+                    # Suponha que você tenha uma URL para a imagem na transação
+                    transaction_image_url = "https://raw.githubusercontent.com/lucaaaaaaaaaaaaaz/yourmother/refs/heads/main/Image.png"  # Substitua pelo URL real
+                    transaction_image_hash = get_image_hash(transaction_image_url)
+                    
+                    if images_are_similar(reference_hash, transaction_image_hash):
+                        message = (
+                            f"🚀 Imagem semelhante detectada na transação!\n\n"
+                            f"🔗 Transação: https://solscan.io/tx/{signature}\n"
+                            f"🔍 Log: {instruction}"
+                        )
+                        send_telegram_message(message)
+                        print("[✔] Alerta enviado no Telegram!")
+                        break  # Sai do loop assim que encontrar a instrução
         else:
             print(f"[✖] Erro ao obter transações: {response.status_code}")
         
