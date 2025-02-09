@@ -9,7 +9,7 @@ from io import BytesIO
 TELEGRAM_TOKEN = "8111108757:AAEGDutj4RjR5yKLff2Y_dbbqWfW15QH8Ss"
 TELEGRAM_CHAT_ID = "1024065103"
 SOLANA_ADDRESS = "Eo7WjKq67rjJQSxS6z3YkapzY3eMj6Xy8X5EQVn5UaB"  # Endereço Solana específico
-IMAGE_URL = "https://raw.githubusercontent.com/lucaaaaaaaaaaaaaz/yourmother/refs/heads/main/Captura%20de%20tela%202025-02-08%20211801.png"  # URL da imagem hospedada
+IMAGE_URL = "https://raw.githubusercontent.com/lucaaaaaaaaaaaaaz/yourmother/refs/heads/main/Image.png"  # URL da imagem hospedada
 
 bot = Bot(token=TELEGRAM_TOKEN)
 processed_signatures = set()  # Armazena transações já processadas
@@ -84,7 +84,7 @@ def monitor_transactions():
                     if "image.png" in instruction:  # Busca pela string que representa a imagem
                         # Aqui você pode adicionar a lógica para baixar e comparar a imagem
                         # Suponha que você tenha uma URL para a imagem na transação
-                        transaction_image_url = "https://raw.githubusercontent.com/lucaaaaaaaaaaaaaz/yourmother/refs/heads/main/Captura%20de%20tela%202025-02-08%20211801.png"  # Substitua pelo URL real
+                        transaction_image_url = "https://raw.githubusercontent.com/lucaaaaaaaaaaaaaz/yourmother/refs/heads/main/Image.png"  # Substitua pelo URL real
                         transaction_image_hash = get_image_hash(transaction_image_url)
                         
                         if images_are_similar(reference_hash, transaction_image_hash):
