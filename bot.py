@@ -27,7 +27,7 @@ def monitor_transactions():
             "jsonrpc": "2.0",
             "id": 1,
             "method": "getSignaturesForAddress",
-            "params": [SOLANA_ADDRESS, {"limit": 150}]  # Busca apenas 150 para evitar spam
+            "params": [SOLANA_ADDRESS, {"limit": 200}]  # Busca apenas 200 para evitar spam
         })
 
         if response.status_code == 200:
@@ -61,8 +61,11 @@ def monitor_transactions():
                 
                 # Verifica logs para encontrar a instrução específica
                 instructions = tx_details["result"].get("meta", {}).get("logMessages", [])
+                print(f"Logs encontrados: {instructions}")  # Mostra todos os logs
+
+                # Verifique se a instrução exata está no log
                 for instruction in instructions:
-                    if "Amm: Initialize Permissionless Constant Product Pool With Config" in instruction:
+                    if "Initialize Permissionless Constant Product Pool" in instruction:  # Busca por parte da instrução
                         message = (
                             f"🚀 Nova pool detectada na Meteora!\n\n"
                             f"🔗 Transação: https://solscan.io/tx/{signature}\n"
@@ -76,6 +79,7 @@ def monitor_transactions():
         
         print("[⏳] Aguardando 10 segundos antes de verificar novamente...")
         time.sleep(10)
+
 
 if __name__ == "__main__":
     monitor_transactions()
